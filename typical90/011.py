@@ -1,14 +1,15 @@
 N = int(input())
 DCS = [list(map(int, input().split())) for _ in range(N)]
 DCS.sort()
+INF = 10 ** 18
 
-dp = [[0] * 5001 for _ in range(N+1)]
-for i in range(1, N+1):
-    D, C, S = DCS[i-1]
-    for j in range(5000, 0, -1):
-        if j - C >= 0 and j <= D:
-          dp[i][j] = max(dp[i-1][j], dp[i-1][j-C] + S)
-          print(i, j, D, C, S, dp[i][j])
-
+dp = [[-INF] * 5001 for _ in range(N+1)]
+dp[0][0] = 0
+for i in range(N):
+    D, C, S = DCS[i]
+    for j in range(5001):
+        dp[i+1][j] = max(dp[i+1][j], dp[i][j])
+        if j + C <= D:
+            dp[i+1][j+C] = max(dp[i+1][j+C], dp[i][j] + S)
+        
 print(max(dp[N]))
-

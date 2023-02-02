@@ -1,50 +1,48 @@
+from functools import cmp_to_key
 import math
 
+def compare(p1, p2):
+    is_upper1 = (p1[1] > 0) or (p1[1] == 0 and p1[0] >= 0)
+    is_upper2 = (p2[1] > 0) or (p2[1] == 0 and p2[0] >= 0)
+
+    if is_upper1 != is_upper2:
+        if is_upper1: return -1
+        else: return 1
+    
+    cross = p1[0] * p2[1] - p1[1] * p2[0]
+    # if cross == 0:
+    #     return abs(p1[0] + p1[1]) - abs(p2[0] + p2[1])
+    return cross
+
 N = int(input())
+P = [list(map(int, input().split())) for _ in range(N)]
 
-points = []
-XY = []
+def angle(p):
+    norm = (p[0]**2 + p[1]**2) ** 0.5
+    deg = math.acos(p[0]/norm) * 180 / math.pi
+    if p[1] < 0:
+        deg = 360 - deg
+    return deg
 
-contain_origin = False
+ans = 0
 for i in range(N):
-    X, Y = map(int, input().split())
-    XY.append((X, Y))
-    if X == 0 and Y == 0:
-        contain_origin = True
-    elif X == 0:
-        points.append((0, 1, i))
-    elif Y == 0:
-        if X > 0:
-            points.append((1, 0, i))
-        else:
-            points.append((-1, 0, i))
-    else:
-        d = (X**2 + Y**2)**0.5
-        if X > 0 and Y > 0:
-            points.append((X/d, Y/d, i))
-        if X > 0 and Y < 0:
-            points.append((-X/d, -Y/d, i)) 
-        if X < 0 and Y > 0:
-            points.append((X/d, Y/d, i)) 
-        if X < 0 and Y < 0:
-            points.append((-X/d, -Y/d, i)) 
-points.sort()
-for i in range(2):
-    p = points[i]
-    points.append()
-if contain_origin:
-    n = 2
-else:
-    n = 3
+    newP = []
+    for j in range(N):
+        if i == j:
+            continue
+        newP.append([P[j][0]-P[i][0], P[j][1]-P[i][1]])
+    # newP.sort(key=cmp_to_key(compare))
+    newP_angle = [angle(p) for p in newP]
+    len_P = len(newP_angle)
+    for j in range(len_P):
+        l, r = -1, len_P
+        while r - l > 1:
+            m = (r + l) // 2
+            if newP_angle[m] >= (180 - newP_angle[j]):
+                r = m
+            else:
+                l = m
+        a = max(abs(newP_angle[j]-newP_angle[(m-1)%len_P]), abs(newP_angle[(m+1)%len_P]-newP_angle[j]))
+        ans = max(ans, min(a, 360-a))
+print(ans)
 
-min_diff = 10**10
-min_i = None
-for i in range(N):
-    ps = points[i:i+n]
-    print(ps)
-    diff = math.degrees(math.asin(ps[0][1])) - math.degrees(math.asin(ps[-1][1]))
-    if diff < min_diff:
-        min_diff = diff
-        min_i = i
-print(min_i)
-print(points[min_i-n:min_i])
